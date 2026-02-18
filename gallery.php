@@ -1,5 +1,17 @@
 <?php 
 include 'db_config.php'; 
+
+// FETCH DYNAMIC STAFF IMAGES
+$settings_query = mysqli_query($conn, "SELECT * FROM site_settings");
+$site = [];
+while($row = mysqli_fetch_assoc($settings_query)) {
+    $site[$row['setting_key']] = $row['setting_value'];
+}
+
+// Fallback logic to prevent "broken" images if DB is empty
+$img_logistics = !empty($site['staff_logistics']) ? "uploads/".$site['staff_logistics'] : "assets/img/default-team.jpg";
+$img_admin = !empty($site['staff_admin']) ? "uploads/".$site['staff_admin'] : "assets/img/default-team.jpg";
+$img_distro = !empty($site['staff_distribution']) ? "uploads/".$site['staff_distribution'] : "assets/img/default-team.jpg";
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -13,7 +25,6 @@ include 'db_config.php';
         :root { --rakula-blue: #003399; --gold: #FFC107; }
         body { background: #0a0a0a; color: white; overflow-x: hidden; font-family: 'Montserrat', sans-serif; }
         
-        /* 3D Scene Container */
         .gallery-container {
             perspective: 1200px;
             padding: 100px 0;
@@ -29,7 +40,6 @@ include 'db_config.php';
             letter-spacing: 5px;
         }
 
-        /* 3D Card Effect */
         .gallery-card {
             position: relative;
             height: 400px;
@@ -55,10 +65,9 @@ include 'db_config.php';
         .card-overlay {
             position: absolute; bottom: 0; left: 0; right: 0; padding: 20px;
             background: linear-gradient(transparent, rgba(0,0,0,0.9));
-            transform: translateZ(30px); /* 3D Depth */
+            transform: translateZ(30px);
         }
 
-        /* Animated Floating Labels */
         .floating-label {
             position: absolute; top: 20px; right: 20px;
             background: var(--gold); color: black;
@@ -68,7 +77,6 @@ include 'db_config.php';
             z-index: 10;
         }
 
-        /* Floating Goal Orbs */
         .goal-orb {
             border: 2px solid var(--rakula-blue);
             border-radius: 50%; padding: 40px; text-align: center;
@@ -86,9 +94,7 @@ include 'db_config.php';
     
     <div class="row g-4 gallery-container">
         <?php
-        // Fetching specifically from gallery_activities table (New Update)
         $activities = mysqli_query($conn, "SELECT * FROM gallery_activities ORDER BY id DESC LIMIT 12");
-        
         if(mysqli_num_rows($activities) > 0):
             $i = 0;
             while($act = mysqli_fetch_assoc($activities)):
@@ -121,20 +127,22 @@ include 'db_config.php';
     <div class="row g-3">
         <div class="col-md-6" data-aos="flip-left">
             <div class="gallery-card" style="height: 300px;">
-                <img src="uploads/about_fleet_default.jpg" alt="Staff">
+                <img src="<?php echo $img_logistics; ?>" alt="Logistics Team">
                 <div class="card-overlay"><h4>Logistics Team</h4></div>
             </div>
         </div>
+        
         <div class="col-md-3" data-aos="flip-up">
             <div class="gallery-card" style="height: 300px;">
-                <img src="uploads/about_office_default.jpg" alt="Office">
+                <img src="<?php echo $img_admin; ?>" alt="Support Admin">
                 <div class="card-overlay"><h4>Support Admin</h4></div>
             </div>
         </div>
+        
         <div class="col-md-3" data-aos="flip-right">
             <div class="gallery-card" style="height: 300px;">
-                <img src="uploads/about_location_default.jpg" alt="Field">
-                <div class="card-overlay"><h4>Distribution</h4></div>
+                <img src="<?php echo $img_distro; ?>" alt="Distribution">
+                <div class="card-overlay"><h4>Distribution Team</h4></div>
             </div>
         </div>
     </div>

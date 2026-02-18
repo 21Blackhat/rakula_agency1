@@ -80,14 +80,27 @@ $category = isset($_GET['cat']) ? mysqli_real_escape_string($conn, $_GET['cat'])
             transform: translateY(-8px); 
             box-shadow: 0 20px 45px rgba(0,0,0,0.12); 
         }
-        
-        .img-container { 
-            background: white; 
-            padding: 30px; 
+
+        /* Full Width Cover Image Styling */
+        .cover-container { 
+            background: #ffffff; 
+            height: 350px; 
+            width: 100%; 
             display: flex; 
             align-items: center; 
             justify-content: center; 
-            height: 320px;
+            padding: 20px; 
+            border-bottom: 1px solid #f0f0f0; 
+        }
+        .cover-img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        
+        .img-container { 
+            background: white; 
+            padding: 20px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            height: 250px;
         }
 
         .product-img { 
@@ -143,30 +156,38 @@ $category = isset($_GET['cat']) ? mysqli_real_escape_string($conn, $_GET['cat'])
         <?php 
         $lato_cats = ['Fino', 'Vito', 'TBA', 'Flavoured'];
         foreach($lato_cats as $cat_item):
-            $active = ($category == $cat_item) ? 'active' : '';
+            $active = (strcasecmp($category, $cat_item) == 0) ? 'active' : '';
             echo "<a href='?cat=$cat_item' class='btn btn-cat $active'>$cat_item</a>";
         endforeach;
         ?>
     </div>
 
-    <div class="row">
+    <div class="row justify-content-center">
         <?php
-        /** * UPDATED LOGIC:
-         * We search for products where brand is 'Lato' 
-         * AND the flavor or description contains the category (e.g., 'Fino')
+        /** * FIX: We search for the sub-category in the flavor_name.
+         * We remove the 'brand_name' filter temporarily to see if your items 
+         * are accidentally saved under 'Kevian' or other brands.
          */
         $query = "SELECT * FROM product_variations 
-                  WHERE brand_name = 'Lato' 
-                  AND (flavor_name LIKE '%$category%' OR description LIKE '%$category%')
+                  WHERE flavor_name LIKE '%$category%' 
+                  OR description LIKE '%$category%'
                   ORDER BY id DESC";
         $result = mysqli_query($conn, $query);
 
         if(mysqli_num_rows($result) > 0) {
             while($row = mysqli_fetch_assoc($result)) {
                 ?>
-                <div class="col-lg-6">
+                <div class="col-lg-10 mb-5">
                     <div class="flavor-card">
-                        <div class="row g-0">
+                        <div class="cover-container">
+                            <?php if (!empty($row['image_path_cover'])): ?>
+                                <img src="uploads/products/<?php echo $row['image_path_cover']; ?>" class="cover-img" alt="Cover View">
+                            <?php else: ?>
+                                <div class="text-muted opacity-50"><i class="bi bi-image h1"></i><br>Cover Image Pending</div>
+                            <?php endif; ?>
+                        </div>
+
+                        <div class="row g-0 border-bottom">
                             <div class="col-6 img-container border-end">
                                 <img src="uploads/products/<?php echo $row['image_path']; ?>" class="product-img" alt="Primary Image">
                             </div>
@@ -174,15 +195,16 @@ $category = isset($_GET['cat']) ? mysqli_real_escape_string($conn, $_GET['cat'])
                                 <img src="uploads/products/<?php echo $row['image_path_2']; ?>" class="product-img" alt="Secondary Image">
                             </div>
                         </div>
+
                         <div class="card-details text-center">
                             <div class="mb-2">
                                 <small class="brand-label">LATO MILK</small>
-                                <h3 class="flavor-title"><?php echo htmlspecialchars($row['flavor_name']); ?></h3>
+                                <h2 class="flavor-title"><?php echo htmlspecialchars($row['flavor_name']); ?></h2>
                             </div>
                             <div class="mb-3">
                                 <span class="badge-size"><?php echo htmlspecialchars($row['size_label']); ?></span>
                             </div>
-                            <p class="desc-text mb-0">
+                            <p class="desc-text mb-0 mx-auto" style="max-width: 800px;">
                                 <?php echo nl2br(htmlspecialchars($row['description'])); ?>
                             </p>
                         </div>
@@ -195,9 +217,9 @@ $category = isset($_GET['cat']) ? mysqli_real_escape_string($conn, $_GET['cat'])
             <div class="col-12 text-center py-5">
                 <div class="bg-white p-5 rounded-4 shadow-sm d-inline-block">
                     <i class="bi bi-info-circle display-1 text-primary opacity-25"></i>
-                    <h3 class="mt-3 text-muted">No "<?php echo htmlspecialchars($category); ?>" products uploaded yet.</h3>
-                    <p>Make sure to include the word "<?php echo htmlspecialchars($category); ?>" in the Flavor Name when adding via Admin.</p>
-                    <a href="lato.php" class="btn btn-primary rounded-pill mt-3">Refresh List</a>
+                    <h3 class="mt-3 text-muted">No "<?php echo htmlspecialchars($category); ?>" products found.</h3>
+                    <p>Check the "Product Inventory List" in your Management Hub to ensure the Flavor Name contains "<?php echo htmlspecialchars($category); ?>".</p>
+                    <a href="lato.php" class="btn btn-primary rounded-pill mt-3">View All Lato</a>
                 </div>
             </div>
             <?php

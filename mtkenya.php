@@ -5,7 +5,7 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Get category from URL, default to 'Mt Kenya Water' from your handwritten notes
+// Get category from URL, default to 'Mt Kenya Water'
 $category = isset($_GET['cat']) ? mysqli_real_escape_string($conn, $_GET['cat']) : 'Mt Kenya Water';
 ?>
 <!DOCTYPE html>
@@ -19,7 +19,7 @@ $category = isset($_GET['cat']) ? mysqli_real_escape_string($conn, $_GET['cat'])
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         :root { 
-            --mt-blue: #0077be; /* Refreshing water blue */
+            --mt-blue: #0077be; 
             --mt-light-blue: #e0f2f1;
             --snow-white: #ffffff;
             --ice-gray: #f0f4f8;
@@ -31,7 +31,6 @@ $category = isset($_GET['cat']) ? mysqli_real_escape_string($conn, $_GET['cat'])
             color: #334455;
         }
         
-        /* Mountain Theme Header */
         .category-header { 
             background: linear-gradient(rgba(0, 119, 190, 0.8), rgba(0, 119, 190, 0.9)), url('https://images.unsplash.com/photo-1589182373726-e4f658ab50f0?q=80&w=2000&auto=format&fit=crop'); 
             background-size: cover;
@@ -42,7 +41,6 @@ $category = isset($_GET['cat']) ? mysqli_real_escape_string($conn, $_GET['cat'])
             text-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
         
-        /* Category Navigation Pills */
         .nav-scroller {
             overflow-x: auto;
             white-space: nowrap;
@@ -71,69 +69,51 @@ $category = isset($_GET['cat']) ? mysqli_real_escape_string($conn, $_GET['cat'])
             transform: translateY(-2px);
         }
 
-        /* 2-Image Card Styling */
+        /* PREMIUM 3-IMAGE CARD (Kevian Style) */
         .flavor-card { 
             border: none; 
-            transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
+            transition: 0.4s ease; 
             background: var(--snow-white); 
             border-radius: 30px; 
             overflow: hidden; 
-            margin-bottom: 40px; 
+            margin-bottom: 50px; 
             box-shadow: 0 15px 35px rgba(0,0,0,0.05); 
         }
         
-        .flavor-card:hover { 
-            transform: scale(1.02); 
-            box-shadow: 0 25px 50px rgba(0,0,0,0.1); 
-        }
-        
-        .img-container { 
-            background: #fff; 
-            padding: 40px; 
+        .flavor-card:hover { transform: translateY(-10px); box-shadow: 0 25px 50px rgba(0,0,0,0.1); }
+
+        /* Main Top Image */
+        .cover-container { 
+            background: #ffffff; 
+            height: 450px; 
+            width: 100%; 
             display: flex; 
             align-items: center; 
             justify-content: center; 
-            height: 350px;
+            padding: 20px; 
+            border-bottom: 1px solid #f0f0f0; 
         }
-
-        .product-img { 
-            max-height: 100%; 
-            width: auto; 
-            object-fit: contain;
-            filter: drop-shadow(0 5px 15px rgba(0,0,0,0.08));
-        }
+        .cover-img { max-width: 100%; max-height: 100%; object-fit: contain; }
         
-        .card-details { 
-            padding: 35px; 
-            background: linear-gradient(to bottom, #ffffff, #f9fcff);
+        /* Two Bottom Side-by-Side Images */
+        .sub-img-container { 
+            background: #ffffff; 
+            height: 280px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            padding: 20px; 
         }
-
-        .brand-label { 
-            color: var(--mt-blue); 
-            font-weight: 700; 
-            text-transform: uppercase; 
-            font-size: 0.75rem; 
-            letter-spacing: 2px;
-            display: block;
-            margin-bottom: 5px;
-        }
-
-        .flavor-title { 
-            color: #1a2a3a; 
-            font-weight: 700; 
-            font-size: 1.5rem;
-        }
-
+        .sub-img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        
+        .card-details { padding: 40px; text-align: center; }
+        .brand-label { color: var(--mt-blue); font-weight: 700; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 2px; display: block; margin-bottom: 10px; }
+        .flavor-title { color: #1a2a3a; font-weight: 700; font-size: 2.2rem; }
         .badge-size { 
-            background: var(--mt-light-blue); 
-            color: var(--mt-blue); 
-            font-weight: 700; 
-            padding: 8px 18px; 
-            border-radius: 50px;
-            font-size: 0.9rem;
+            background: var(--mt-blue); color: #fff; font-weight: 700; 
+            padding: 10px 30px; border-radius: 50px; display: inline-block; margin-top: 20px;
         }
-
-        .desc-text { color: #5a6c7d; font-size: 1rem; line-height: 1.8; margin-top: 15px; }
+        .desc-text { color: #5a6c7d; font-size: 1.05rem; line-height: 1.8; max-width: 85%; margin: 20px auto 0; }
     </style>
 </head>
 <body>
@@ -168,42 +148,57 @@ $category = isset($_GET['cat']) ? mysqli_real_escape_string($conn, $_GET['cat'])
         <?php 
         $mt_cats = ['Mt Kenya Water', 'Mt Kenya 500ml', 'Dairy Joy', 'Mt Kenya Fino'];
         foreach($mt_cats as $cat_item):
-            $active = ($category == $cat_item) ? 'active' : '';
+            $active = (strcasecmp($category, $cat_item) == 0) ? 'active' : '';
             echo "<a href='?cat=" . urlencode($cat_item) . "' class='btn btn-cat $active'>$cat_item</a>";
         endforeach;
         ?>
     </div>
 
-    <div class="row">
+    <div class="row justify-content-center">
         <?php
-        $query = "SELECT * FROM product_variations WHERE brand_name = '$category' ORDER BY id DESC";
+        // LOGIC: Search for brand 'Mt Kenya' and match the sub-category in the flavor_name
+        $query = "SELECT * FROM product_variations 
+                  WHERE brand_name = 'Mt Kenya' 
+                  AND (flavor_name LIKE '%$category%' OR description LIKE '%$category%') 
+                  ORDER BY id DESC";
         $result = mysqli_query($conn, $query);
 
         if(mysqli_num_rows($result) > 0) {
             while($row = mysqli_fetch_assoc($result)) {
                 ?>
-                <div class="col-lg-6">
+                <div class="col-lg-10 mb-5">
                     <div class="flavor-card">
-                        <div class="row g-0">
-                            <div class="col-6 img-container border-end">
-                                <img src="uploads/products/<?php echo $row['image_path']; ?>" class="product-img" alt="Primary View">
+                        
+                        <div class="cover-container">
+                            <?php if (!empty($row['image_path_cover'])): ?>
+                                <img src="uploads/products/<?php echo $row['image_path_cover']; ?>" class="cover-img" alt="Cover View">
+                            <?php else: ?>
+                                <div class="text-muted"><i class="bi bi-image h1"></i><br>Cover Image Pending</div>
+                            <?php endif; ?>
+                        </div>
+
+                        <div class="row g-0 border-bottom">
+                            <div class="col-6 sub-img-container border-end">
+                                <img src="uploads/products/<?php echo $row['image_path']; ?>" class="sub-img" alt="Front View">
                             </div>
-                            <div class="col-6 img-container">
-                                <img src="uploads/products/<?php echo $row['image_path_2']; ?>" class="product-img" alt="Variety View">
+                            <div class="col-6 sub-img-container">
+                                <img src="uploads/products/<?php echo $row['image_path_2']; ?>" class="sub-img" alt="Detail View">
                             </div>
                         </div>
+
                         <div class="card-details">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div>
-                                    <small class="brand-label">MT KENYA RANGE</small>
-                                    <h3 class="flavor-title"><?php echo htmlspecialchars($row['flavor_name']); ?></h3>
-                                </div>
-                                <span class="badge-size"><?php echo htmlspecialchars($row['size_label']); ?></span>
-                            </div>
+                            <small class="brand-label">MT KENYA RANGE</small>
+                            <h2 class="flavor-title"><?php echo htmlspecialchars($row['flavor_name']); ?></h2>
+                            
                             <p class="desc-text">
                                 <?php echo nl2br(htmlspecialchars($row['description'])); ?>
                             </p>
+                            
+                            <div class="mt-4">
+                                <span class="badge-size"><?php echo htmlspecialchars($row['size_label']); ?></span>
+                            </div>
                         </div>
+
                     </div>
                 </div>
                 <?php
@@ -214,7 +209,7 @@ $category = isset($_GET['cat']) ? mysqli_real_escape_string($conn, $_GET['cat'])
                 <div class="bg-white p-5 rounded-5 shadow-sm d-inline-block">
                     <i class="bi bi-droplet display-1 text-info opacity-25"></i>
                     <h3 class="mt-4 text-muted">Variations for <?php echo htmlspecialchars($category); ?> are being updated.</h3>
-                    <p class="text-muted">Please check back soon or browse our other categories.</p>
+                    <p class="text-muted">Ensure your product in the database has "Mt Kenya" as the Brand Name.</p>
                 </div>
             </div>
             <?php
@@ -225,7 +220,7 @@ $category = isset($_GET['cat']) ? mysqli_real_escape_string($conn, $_GET['cat'])
 
 <footer class="py-5 text-center bg-white border-top">
     <div class="container">
-        <p class="mb-0 text-muted">&copy; <?php echo date('Y'); ?> Rakula Agency Ltd. Authorized Mt Kenya Products Distributor.</p>
+        <p class="mb-0 text-muted">&copy; <?php echo date('Y'); ?> Rakula Agency Ltd. Authorized Mt Kenya Distributor.</p>
     </div>
 </footer>
 

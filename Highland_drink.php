@@ -20,18 +20,27 @@ $category = isset($_GET['cat']) ? mysqli_real_escape_string($conn, $_GET['cat'])
         :root { --primary: #003399; --gold: #ffcc00; --dark-blue: #001a4d; }
         body { font-family: 'Segoe UI', sans-serif; background-color: #f4f6f9; }
         
-        /* Original Theme Header */
         .category-header { background: var(--primary); color: white; padding: 60px 0; border-bottom: 4px solid var(--gold); text-transform: uppercase; letter-spacing: 2px; }
         
-        /* The requested 2-image flavor card */
-        .flavor-card { border: none; transition: 0.3s; background: #fff; border-radius: 20px; overflow: hidden; margin-bottom: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        /* Premium Card Styling */
+        .flavor-card { border: none; transition: 0.3s; background: #fff; border-radius: 20px; overflow: hidden; margin-bottom: 40px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         .flavor-card:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
         
-        .img-container { background: #f8f9fa; padding: 25px; text-align: center; display: flex; align-items: center; justify-content: center; height: 300px; }
-        .product-img { max-height: 100%; width: auto; object-fit: contain; }
+        /* Main Top Image (Cover) - Set to SHOW ENTIRE IMAGE */
+        .cover-container { background: #ffffff; height: 450px; width: 100%; display: flex; align-items: center; justify-content: center; padding: 20px; border-bottom: 1px solid #f0f0f0; }
+        .cover-img { max-width: 100%; max-height: 100%; object-fit: contain; transition: 0.5s ease; }
         
-        .desc-text { color: #666; font-size: 0.95rem; line-height: 1.6; }
-        .badge-size { background: var(--gold); color: #000; font-weight: 700; padding: 5px 15px; border-radius: 50px; }
+        /* Bottom Small Images - Set to SHOW ENTIRE IMAGE */
+        .sub-img-container { background: #ffffff; height: 250px; display: flex; align-items: center; justify-content: center; padding: 15px; }
+        .sub-img { max-width: 100%; max-height: 100%; object-fit: contain; transition: 0.5s ease; }
+        
+        /* Hover Zoom Effect */
+        .flavor-card:hover .cover-img, 
+        .flavor-card:hover .sub-img { transform: scale(1.03); }
+        
+        /* Text Content Styling (Centered) */
+        .desc-text { color: #666; font-size: 1rem; line-height: 1.6; max-width: 85%; margin: 0 auto; }
+        .badge-size { background: var(--gold); color: #000; font-weight: 700; padding: 8px 25px; border-radius: 50px; display: inline-block; margin-top: 15px; font-size: 0.95rem; }
         
         .nav-link.active { border-bottom: 3px solid var(--gold); }
     </style>
@@ -44,7 +53,7 @@ $category = isset($_GET['cat']) ? mysqli_real_escape_string($conn, $_GET['cat'])
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
-                <li class="nav-item"><a class="nav-link active" href="highland_drinks.php">Products</a></li>
+                <li class="nav-item"><a class="nav-link active" href="highland_drink.php">Products</a></li>
                 <li class="nav-item"><a class="nav-link" href="gallery.php">Gallery</a></li>
                 <li class="nav-item"><a class="nav-link" href="contact.php">Contact</a></li>
             </ul>
@@ -67,54 +76,60 @@ $category = isset($_GET['cat']) ? mysqli_real_escape_string($conn, $_GET['cat'])
         <a href="?cat=Bazu" class="btn <?php echo $category == 'Bazu' ? 'btn-primary' : 'btn-outline-primary'; ?> rounded-pill px-4 m-1">Bazu</a>
     </div>
 
-    <div class="row">
+    <div class="row justify-content-center">
         <?php
-        // Fetching variations based on the selected category
         $query = "SELECT * FROM product_variations WHERE brand_name = '$category' ORDER BY id DESC";
         $result = mysqli_query($conn, $query);
 
         if(mysqli_num_rows($result) > 0) {
             while($row = mysqli_fetch_assoc($result)) {
                 ?>
-                <div class="col-lg-6">
+                <div class="col-lg-8 mb-5">
                     <div class="flavor-card">
-                        <div class="row g-0">
-                            <div class="col-6 img-container border-end">
-                                <img src="uploads/products/<?php echo $row['image_path']; ?>" class="product-img img-fluid" alt="Front View">
+                        
+                        <div class="cover-container">
+                            <?php if (!empty($row['image_path_cover'])): ?>
+                                <img src="uploads/products/<?php echo $row['image_path_cover']; ?>" class="cover-img" alt="Product Cover">
+                            <?php else: ?>
+                                <div class="text-muted opacity-50"><i class="bi bi-image h1"></i><br>Main Image Pending</div>
+                            <?php endif; ?>
+                        </div>
+
+                        <div class="row g-0 border-bottom">
+                            <div class="col-6 sub-img-container border-end">
+                                <img src="uploads/products/<?php echo $row['image_path']; ?>" class="sub-img" alt="Solo Shot">
                             </div>
-                            <div class="col-6 img-container">
-                                <img src="uploads/products/<?php echo $row['image_path_2']; ?>" class="product-img img-fluid" alt="Detail View">
+                            <div class="col-6 sub-img-container">
+                                <img src="uploads/products/<?php echo $row['image_path_2']; ?>" class="sub-img" alt="Group Detail">
                             </div>
                         </div>
-                        <div class="p-4">
-                            <div class="d-flex justify-content-between align-items-start mb-3">
-                                <div>
-                                    <h3 class="fw-bold mb-0 text-primary"><?php echo htmlspecialchars($row['flavor_name']); ?></h3>
-                                    <small class="text-muted text-uppercase fw-bold"><?php echo htmlspecialchars($row['brand_name']); ?></small>
-                                </div>
+
+                        <div class="p-5 text-center">
+                            <small class="text-muted text-uppercase fw-bold d-block mb-2" style="letter-spacing: 1px;"><?php echo htmlspecialchars($row['brand_name']); ?></small>
+                            <h2 class="fw-bold text-primary mb-3"><?php echo htmlspecialchars($row['flavor_name']); ?></h2>
+                            
+                            <p class="desc-text"><?php echo nl2br(htmlspecialchars($row['description'])); ?></p>
+                            
+                            <div class="mt-4">
                                 <span class="badge-size"><?php echo htmlspecialchars($row['size_label']); ?></span>
                             </div>
-                            <p class="desc-text mb-0"><?php echo nl2br(htmlspecialchars($row['description'])); ?></p>
                         </div>
+
                     </div>
                 </div>
                 <?php
             }
         } else {
-            ?>
-            <div class="col-12 text-center py-5">
-                <i class="bi bi-box-seam display-1 text-muted opacity-25"></i>
-                <h3 class="mt-3 text-muted">No variants added for <?php echo htmlspecialchars($category); ?> yet.</h3>
-            </div>
-            <?php
+            echo '<div class="col-12 text-center py-5"><h3 class="text-muted">No products found for this category.</h3></div>';
         }
         ?>
     </div>
 </div>
 
 <footer class="py-4 text-center border-top bg-white">
-    <p class="mb-0 text-muted">&copy; <?php echo date('Y'); ?> Rakula Agency Ltd. All Rights Reserved.</p>
+    <p class="mb-0 text-muted small">&copy; <?php echo date('Y'); ?> Rakula Agency Ltd. | Quality You Can Taste</p>
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

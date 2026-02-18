@@ -22,8 +22,6 @@ if ($about_res && mysqli_num_rows($about_res) > 0) {
 
 $short_about = (strlen($about_text) > 250) ? substr($about_text, 0, 250) . "..." : $about_text;
 
-// 4. COOKIE LOGIC
-$show_cookie = !isset($_SESSION['cookie_consent_given']);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -46,45 +44,135 @@ $show_cookie = !isset($_SESSION['cookie_consent_given']);
         .brand-carousel img { height: 250px; width: 100%; object-fit: contain; background: #fff; padding: 20px; }
         .brand-section { background: #fff; padding: 60px 0; border-bottom: 1px solid #eee; }
 
-        /* --- PEPSI STYLE PRODUCT CARDS --- */
-        .pepsi-section { background-color: #000; color: white; padding: 80px 0; }
-        .pepsi-card { background: transparent; border: none; text-align: center; }
-        .pepsi-card img { 
-            height: 300px; 
-            object-fit: contain; 
-            transition: transform 0.5s ease;
-            filter: drop-shadow(0 10px 20px rgba(255,255,255,0.2));
-        }
-        .pepsi-card:hover img { transform: scale(1.1) rotate(5deg); }
-        .pepsi-title { font-weight: 900; text-transform: uppercase; letter-spacing: 1px; margin-top: 20px; font-size: 1.2rem; }
-        .btn-pepsi {
-            background-color: #0000ff; color: white; border-radius: 50px; padding: 10px 30px;
-            font-weight: 800; text-transform: uppercase; border: none; margin-top: 15px; transition: 0.3s;
-        }
-        .btn-pepsi:hover { background-color: #fff; color: #000; }
+        /* --- FULL IMAGE FIT (NO CROPPING) --- */
+  /* --- PROFESSIONAL 3D CARD (PRESERVING YOUR WORKING LOGIC) --- */
+.pepsi-section { 
+    background-color: #000; 
+    padding: 60px 0; 
+    /* This ensures no gap between this and the next section */
+    margin-bottom: 0; 
+}
 
-        /* --- COOKIE BANNER --- */
-        #cookie-banner {
-            position: fixed; bottom: 0; left: 0; right: 0; background: #2c3e50; color: white;
-            padding: 20px; z-index: 9999; display: flex; align-items: center; justify-content: space-between;
-            box-shadow: 0 -5px 15px rgba(0,0,0,0.3);
-        }
-        .cookie-content { font-size: 0.9rem; padding-right: 20px; }
-        .cookie-btns .btn { margin-left: 10px; font-weight: 600; }
-        .btn-consent { background-color: #2ecc71; color: white; border: none; }
-        .btn-decline { background-color: #e74c3c; color: white; border: none; }
-        .btn-manage { background: transparent; color: #fff; text-decoration: underline; border: none; }
-        .close-cookie { color: #fff; cursor: pointer; font-size: 1.5rem; line-height: 1; margin-left: 15px; }
+.pepsi-card { 
+    background: rgba(255, 255, 255, 0.03); 
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    text-align: center; 
+    position: relative;
+    padding: 20px 15px;
+    /* Keeps cards same height even if text varies */
+    height: 100%; 
+    transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+    transform-style: preserve-3d;
+    overflow: visible;
+    display: flex;
+    flex-direction: column;
+}
 
-        /* Footer */
+/* --- THE IMAGE FIX: REMOVING THE "MISMATCHED BACKGROUND" LOOK --- */
+.pepsi-card img { 
+    width: 100%;
+    height: auto; 
+    min-height: 250px;
+    max-height: 500px; 
+    object-fit: contain; 
+    object-position: bottom center; 
+    background-color: #ffffff; 
+    padding: 5px; 
+    transition: transform 0.5s ease;
+}
+
+/* For mobile, we shrink the height so it doesn't look stretched */
+@media (max-width: 768px) {
+    .pepsi-card img { height: 200px; }
+}
+
+/* --- PRESERVING YOUR LED & BUTTON LOGIC EXACTLY --- */
+.pepsi-card::after {
+    content: "";
+    position: absolute;
+    inset: -1px; 
+    border-radius: 15px;
+    padding: 2px; 
+    background: linear-gradient(135deg, #ffcc00, #00f2ff, #003399, #ffcc00);
+    background-size: 300% 300%;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none; 
+}
+
+.btn-pepsi {
+    position: relative; 
+    z-index: 10;        
+    background-color: #ffcc00; 
+    color: #000 !important;
+    border-radius: 50px;
+    padding: 12px 35px;
+    font-weight: 800;
+    text-transform: uppercase;
+    border: none;
+    margin-top: auto; /* Pushes button to bottom of the card */
+    display: inline-block; 
+    text-decoration: none; 
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(255, 204, 0, 0.3);
+}
+
+.btn-pepsi:hover {
+    background-color: #003399; 
+    color: #fff !important;
+    transform: translateY(-3px) translateZ(70px); 
+    box-shadow: 0 10px 25px rgba(0, 51, 153, 0.5);
+}
+
+.pepsi-card:hover {
+    transform: perspective(1000px) rotateY(10deg) rotateX(5deg) translateY(-10px);
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+}
+
+.pepsi-card:hover::after {
+    opacity: 1;
+    animation: led-glow 4s linear infinite;
+}
+
+.pepsi-card:hover img { 
+    transform: translateZ(60px) scale(1.1); 
+    filter: drop-shadow(0 15px 25px rgba(0, 0, 0, 0.5));
+}
+
+@keyframes led-glow {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+      /* Footer */
         .footer { background-color: #1b5e20; color: white; padding: 70px 0 30px; }
         .footer-line { border-top: 3px solid var(--rakula-gold); width: 50px; margin-bottom: 25px; }
         .footer a { color: #ccc; text-decoration: none; font-size: 0.9rem; transition: 0.2s; }
         .footer a:hover { color: white; padding-left: 5px; }
 
         /* 3D HERO ANIMATION */
-        .hero-container { position: relative; height: 550px; overflow: hidden; background: #000; perspective: 1200px; }
-        .hero-media { width: 100%; height: 100%; object-fit: cover; display: block; }
+        /* --- HERO ADAPTATION (FROM YOUR PROVIDED CODE) --- */
+.hero-container { 
+    position: relative; 
+    height: auto;           /* Image defines the height, removing black gap */
+    min-height: 400px;      /* Ensures visibility on empty states */
+    overflow: hidden; 
+    background: #fff;       /* Changed from black to white/transparent */
+}
+
+.hero-media { 
+    width: 100%; 
+    height: auto;           /* Prevents stretching */
+    display: block; 
+    object-fit: contain;    /* Shows whole image (horizontal or vertical) */
+    background: #fff; 
+}
         .carousel-item.active .hero-media { animation: kenBurns3D 15s infinite alternate ease-in-out; }
         @keyframes kenBurns3D { 0% { transform: scale(1) translateZ(0); } 100% { transform: scale(1.1) translateZ(50px); } }
 
@@ -155,24 +243,22 @@ $show_cookie = !isset($_SESSION['cookie_consent_given']);
                 <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" class="active"></button>
             <?php endif; ?>
         </div>
-        <div class="carousel-inner h-100">
-            <?php
-            $banner_res = mysqli_query($conn, "SELECT * FROM banner_assets ORDER BY id DESC");
-            $active = true;
-            if($banner_res && mysqli_num_rows($banner_res) > 0):
-                while($banner = mysqli_fetch_assoc($banner_res)):
-            ?>
-                <div class="carousel-item h-100 <?php echo $active ? 'active' : ''; ?>" data-bs-interval="<?php echo ($banner['file_type'] == 'video') ? '15000' : '5000'; ?>">
-                    <?php if($banner['file_type'] == 'video'): ?>
-                        <video class="hero-media" autoplay muted loop playsinline><source src="uploads/<?php echo $banner['file_path']; ?>" type="video/mp4"></video>
-                    <?php else: ?>
-                        <img src="uploads/<?php echo $banner['file_path']; ?>" class="hero-media" alt="Rakula Banner">
-                    <?php endif; ?>
-                </div>
-            <?php $active = false; endwhile; else: ?>
-                <div class="carousel-item h-100 active"><img src="uploads/org_hero.jpg" class="hero-media" alt="Default Banner"></div>
+        <div class="carousel-inner"> <?php
+    $banner_res = mysqli_query($conn, "SELECT * FROM banner_assets ORDER BY id DESC");
+    $active = true;
+    if($banner_res && mysqli_num_rows($banner_res) > 0):
+        while($banner = mysqli_fetch_assoc($banner_res)):
+    ?>
+        <div class="carousel-item <?php echo $active ? 'active' : ''; ?>"> <?php if($banner['file_type'] == 'video'): ?>
+                <video class="hero-media w-100" autoplay muted loop playsinline>
+                    <source src="uploads/<?php echo $banner['file_path']; ?>" type="video/mp4">
+                </video>
+            <?php else: ?>
+                <img src="uploads/<?php echo $banner['file_path']; ?>" class="hero-media w-100" alt="Rakula Banner">
             <?php endif; ?>
         </div>
+    <?php $active = false; endwhile; endif; ?>
+</div>
     </div>
 </div>
 
@@ -222,7 +308,6 @@ $show_cookie = !isset($_SESSION['cookie_consent_given']);
         </div>
     </div>
 </section>
-
 <section class="pepsi-section" id="products">
     <div class="container">
         <div class="text-center mb-5">
@@ -233,18 +318,42 @@ $show_cookie = !isset($_SESSION['cookie_consent_given']);
             <?php
             $home_query = "SELECT * FROM product_variations WHERE show_on_home = 1 ORDER BY id DESC LIMIT 3";
             $home_result = mysqli_query($conn, $home_query);
+            
             if($home_result && mysqli_num_rows($home_result) > 0):
                 while($row = mysqli_fetch_assoc($home_result)):
+                    // LOGIC FOR DYNAMIC BRAND TARGETING
+                    $brand_lower = strtolower($row['brand_name']);
+                    
+                    if (strpos($brand_lower, 'highland') !== false) {
+                        $target_link = "Highland_drink.php";
+                    } elseif (strpos($brand_lower, 'lato') !== false) {
+                        $target_link = "lato.php";
+                    } elseif (strpos($brand_lower, 'safari') !== false || strpos($brand_lower, 'bounty') !== false) {
+                        // This handles Safari Lemonade, Energy Booster, etc.
+                        $target_link = "bounty.php";
+                    } else {
+                        $target_link = "Highland_drink.php?brand=" . urlencode($row['brand_name']);
+                    }
             ?>
             <div class="col-md-4">
                 <div class="pepsi-card">
-                    <img src="uploads/products/<?php echo $row['image_path']; ?>" class="img-fluid" alt="Product">
+                    <img src="uploads/products/<?php echo htmlspecialchars($row['image_path']); ?>" class="img-fluid" alt="Product">
                     <h4 class="pepsi-title"><?php echo htmlspecialchars($row['flavor_name']); ?></h4>
-                    <p class="small text-white-50"><?php echo htmlspecialchars($row['brand_name']); ?> (<?php echo htmlspecialchars($row['size_label']); ?>)</p>
-                    <a href="#=<?php echo urlencode($row['brand_name']); ?>" class="btn btn-pepsi">Find Out More</a>
+                    <p class="small text-white-50">
+                        <?php echo htmlspecialchars($row['brand_name']); ?> 
+                        <?php echo !empty($row['size_label']) ? "(".htmlspecialchars($row['size_label']).")" : ""; ?>
+                    </p>
+                    <a href="<?php echo $target_link; ?>" class="btn btn-pepsi">Find Out More</a>
                 </div>
             </div>
-            <?php endwhile; endif; ?>
+            <?php 
+                endwhile; 
+            else: 
+            ?>
+                <div class="col-12 text-center">
+                    <p class="text-muted">Stay tuned! Our featured refreshments are coming soon.</p>
+                </div>
+            <?php endif; ?>
         </div>
     </div>
 </section>
@@ -272,8 +381,17 @@ $show_cookie = !isset($_SESSION['cookie_consent_given']);
                     $foot_brands = mysqli_query($conn, "SELECT DISTINCT brand_name FROM product_variations LIMIT 4");
                     if($foot_brands && mysqli_num_rows($foot_brands) > 0):
                         while($fb = mysqli_fetch_assoc($foot_brands)): 
+                            // LOGIC FOR SPECIFIC FOOTER BRAND LINKS
+                            $f_brand_lower = strtolower($fb['brand_name']);
+                            if (strpos($f_brand_lower, 'highland') !== false) {
+                                $f_link = "Highland_drink.php";
+                            } elseif (strpos($f_brand_lower, 'lato') !== false) {
+                                $f_link = "lato.php";
+                            } else {
+                                $f_link = "Highland_drink.php?brand=" . urlencode($fb['brand_name']);
+                            }
                     ?>
-                    <li><a href="brand_page.php?brand=<?php echo urlencode($fb['brand_name']); ?>"><?php echo htmlspecialchars($fb['brand_name']); ?> Products</a></li>
+                    <li><a href="<?php echo $f_link; ?>"><?php echo htmlspecialchars($fb['brand_name']); ?> Products</a></li>
                     <?php endwhile; else: ?>
                     <li class="text-white-50 small">Explore our brands above.</li>
                     <?php endif; ?>
@@ -294,35 +412,7 @@ $show_cookie = !isset($_SESSION['cookie_consent_given']);
     </div>
 </footer>
 
-<?php 
-$hide_banner = isset($_SESSION['user_id']) || isset($_SESSION['cookie_acknowledged']);
-if (!$hide_banner): 
-?>
-<div id="cookie-banner">
-    <div class="cookie-content">
-        <strong>Your privacy is important to us.</strong><br>
-        We use cookies to improve your experience and serve you tailored advertisements.
-    </div>
-    <div class="d-flex align-items-center">
-        <div class="cookie-btns">
-            <button class="btn btn-consent btn-sm" onclick="acceptCookies()">I consent to cookies</button>
-            <button class="btn btn-decline btn-sm" onclick="acceptCookies()">Decline All</button>
-        </div>
-        <span class="close-cookie" onclick="acceptCookies()">&times;</span>
-    </div>
-</div>
-<?php endif; ?>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-<script>
-    function acceptCookies() {
-        const banner = document.getElementById('cookie-banner');
-        if(banner) {
-            banner.style.display = 'none';
-        }
-        fetch('update_cookie_session.php');
-    }
-</script>
 </body>
 </html>

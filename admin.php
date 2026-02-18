@@ -18,7 +18,8 @@ if(!isset($_SESSION['has_visited_admin'])) {
     $_SESSION['has_visited_admin'] = true;
 }
 
-// --- HANDLE GALLERY ACTIVITY UPLOAD (NEW UPDATE) ---
+// --- HANDLE GALLERY ACTIVITY UPLOAD ---
+// --- UPDATED HANDLE GALLERY & STAFF UPLOAD ---
 if (isset($_POST['add_gallery_activity'])) {
     $label = mysqli_real_escape_string($conn, $_POST['activity_label']);
     $target_dir = "uploads/gallery/";
@@ -26,24 +27,28 @@ if (isset($_POST['add_gallery_activity'])) {
     
     $file_name = $_FILES["activity_file"]["name"];
     $ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
-    $allowed_images = ['jpg', 'jpeg', 'png', 'webp'];
-    $allowed_videos = ['mp4', 'webm'];
     
-    $type = "";
-    if (in_array($ext, $allowed_images)) { $type = "image"; }
-    elseif (in_array($ext, $allowed_videos)) { $type = "video"; }
+    $new_name = "staff_" . time() . "." . $ext;
+    $db_path = "gallery/" . $new_name;
 
-    if ($type != "") {
-        $new_name = "act_" . time() . "_" . rand(100, 999) . "." . $ext;
-        if (move_uploaded_file($_FILES["activity_file"]["tmp_name"], $target_dir . $new_name)) {
-            $db_path = "gallery/" . $new_name;
-            mysqli_query($conn, "INSERT INTO gallery_activities (file_path, file_type, label) VALUES ('$db_path', '$type', '$label')");
-            $msg = "Success: Gallery activity added!";
+    if (move_uploaded_file($_FILES["activity_file"]["tmp_name"], $target_dir . $new_name)) {
+        // 1. Save to general gallery history
+        mysqli_query($conn, "INSERT INTO gallery_activities (file_path, file_type, label) VALUES ('$db_path', 'image', '$label')");
+
+        // 2. Automatically update the "Dedicated Staff" section based on the label
+        $setting_key = "";
+        if ($label == "Logistics Team") { $setting_key = "staff_logistics"; }
+        elseif ($label == "Management") { $setting_key = "staff_admin"; } // Maps Management to Support Admin slot
+        elseif ($label == "Distribution Team") { $setting_key = "staff_distribution"; }
+
+        if ($setting_key != "") {
+            mysqli_query($conn, "UPDATE site_settings SET setting_value = '$db_path' WHERE setting_key = '$setting_key'");
         }
+
+        $msg = "Success: $label photo updated and set as featured image!";
     }
 }
-
-// --- HANDLE GALLERY DELETION (NEW UPDATE) ---
+// --- HANDLE GALLERY DELETION ---
 if (isset($_GET['delete_activity'])) {
     $id = (int)$_GET['delete_activity'];
     $res = mysqli_fetch_assoc(mysqli_query($conn, "SELECT file_path FROM gallery_activities WHERE id=$id"));
@@ -55,7 +60,7 @@ if (isset($_GET['delete_activity'])) {
     exit();
 }
 
-// --- HANDLE BANNER DELETION (NEW UPDATE) ---
+// --- HANDLE BANNER DELETION ---
 if (isset($_GET['delete_banner'])) {
     $id = (int)$_GET['delete_banner'];
     $res = mysqli_fetch_assoc(mysqli_query($conn, "SELECT file_path FROM banner_assets WHERE id=$id"));
@@ -67,7 +72,7 @@ if (isset($_GET['delete_banner'])) {
     exit();
 }
 
-// --- HANDLE PARTNER LOGO DELETION (NEW UPDATE) ---
+// --- HANDLE PARTNER LOGO DELETION ---
 if (isset($_GET['delete_logo'])) {
     $id = (int)$_GET['delete_logo'];
     $res = mysqli_fetch_assoc(mysqli_query($conn, "SELECT image_path FROM brand_logos WHERE id=$id"));
@@ -79,32 +84,34 @@ if (isset($_GET['delete_logo'])) {
     exit();
 }
 
-// --- HANDLE PRODUCT VARIATION UPLOAD (UPDATED FOR 2 IMAGES) ---
+// --- HANDLE PRODUCT VARIATION UPLOAD (UPDATED FOR 3 IMAGES & NO SIZE) ---
 if (isset($_POST['add_product_variation'])) {
     $brand = mysqli_real_escape_string($conn, $_POST['brand_name']);
     $flavor = mysqli_real_escape_string($conn, $_POST['flavor_name']);
     $description = mysqli_real_escape_string($conn, $_POST['description']);
-    $size = mysqli_real_escape_string($conn, $_POST['size_label']);
-    
     $price = 0; 
     $show_home = isset($_POST['show_on_home']) ? 1 : 0; 
-    
-    $sort_value = (float)$size;
-    if (stripos($size, 'ml') !== false && $sort_value > 10) { $sort_value = $sort_value / 1000; }
 
     $upload_dir = 'uploads/products/';
     if (!is_dir($upload_dir)) { mkdir($upload_dir, 0755, true); }
 
-    // Image 1 Logic (Primary)
+    // Image 1: Primary (Solo)
     $img1_name = time() . "_1_" . basename($_FILES['product_image']['name']);
     move_uploaded_file($_FILES['product_image']['tmp_name'], $upload_dir . $img1_name);
 
-    // Image 2 Logic (Secondary)
+    // Image 2: Secondary (Group)
     $img2_name = time() . "_2_" . basename($_FILES['product_image_2']['name']);
     move_uploaded_file($_FILES['product_image_2']['tmp_name'], $upload_dir . $img2_name);
 
-    $sql = "INSERT INTO product_variations (brand_name, flavor_name, description, size_label, sort_value, price, image_path, image_path_2, show_on_home) 
-            VALUES ('$brand', '$flavor', '$description', '$size', '$sort_value', '$price', '$img1_name', '$img2_name', '$show_home')";
+    // Image 3: Cover (Optional 3D LED Image)
+    $img_cover_name = "";
+    if(!empty($_FILES['product_cover']['name'])) {
+        $img_cover_name = "cover_" . time() . "_" . basename($_FILES['product_cover']['name']);
+        move_uploaded_file($_FILES['product_cover']['tmp_name'], $upload_dir . $img_cover_name);
+    }
+
+    $sql = "INSERT INTO product_variations (brand_name, flavor_name, description, price, image_path, image_path_2, image_path_cover, show_on_home) 
+            VALUES ('$brand', '$flavor', '$description', '$price', '$img1_name', '$img2_name', '$img_cover_name', '$show_home')";
     
     if (mysqli_query($conn, $sql)) {
         $msg = "Success: Product variation added!";
@@ -155,13 +162,14 @@ if (isset($_POST['update_about_image'])) {
     }
 }
 
-// 7. Handle Deletions (UPDATED TO REMOVE BOTH IMAGES)
+// 7. Handle Deletions (UPDATED TO REMOVE ALL 3 IMAGES)
 if (isset($_GET['delete_variation'])) {
     $id = (int)$_GET['delete_variation'];
-    $res = mysqli_fetch_assoc(mysqli_query($conn, "SELECT image_path, image_path_2 FROM product_variations WHERE id=$id"));
+    $res = mysqli_fetch_assoc(mysqli_query($conn, "SELECT image_path, image_path_2, image_path_cover FROM product_variations WHERE id=$id"));
     if($res) { 
         if(file_exists("uploads/products/" . $res['image_path'])) unlink("uploads/products/" . $res['image_path']); 
         if(!empty($res['image_path_2']) && file_exists("uploads/products/" . $res['image_path_2'])) unlink("uploads/products/" . $res['image_path_2']);
+        if(!empty($res['image_path_cover']) && file_exists("uploads/products/" . $res['image_path_cover'])) unlink("uploads/products/" . $res['image_path_cover']);
     }
     mysqli_query($conn, "DELETE FROM product_variations WHERE id = $id");
     header("Location: admin.php?msg=Deleted");
@@ -192,7 +200,19 @@ while($row = mysqli_fetch_assoc($res_about)) { $about_images[$row['section_key']
         .nav-link { color: rgba(255,255,255,0.7); transition: 0.3s; border-radius: 8px; margin-bottom: 5px; text-decoration: none; display: block; padding: 10px; }
         .nav-link:hover, .nav-link.active { color: white; background: rgba(255,255,255,0.1); }
         .admin-card { border: none; border-radius: 15px; background: white; padding: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 30px; }
-        .product-img { width: 45px; height: 45px; object-fit: contain; border-radius: 8px; background: #f8f9fa; border: 1px solid #eee; margin-right: 4px; }
+        
+        /* Image Preview Styles */
+        .product-img { width: 50px; height: 50px; object-fit: contain; border-radius: 8px; background: #f8f9fa; border: 1px solid #eee; }
+        .group-img-small { width: 35px; height: 35px; object-fit: contain; border-radius: 4px; background: #fff; border: 1px dashed #ccc; }
+        
+        /* 3D LED Cover Effect */
+        .cover-led-preview { 
+            width: 80px; height: 50px; object-fit: cover; border-radius: 10px;
+            border: 2px solid transparent;
+            background: linear-gradient(#222, #222) padding-box, linear-gradient(45deg, #003399, #00d4ff) border-box;
+            box-shadow: 0 0 10px rgba(0, 51, 153, 0.4);
+        }
+
         .banner-preview { height: 80px; width: 120px; object-fit: cover; border-radius: 5px; }
         .section-header { font-family: 'Playfair Display', serif; color: var(--rakula-blue); border-left: 5px solid var(--rakula-blue); padding-left: 15px; }
         .about-preview { height: 100px; width: 100%; object-fit: cover; border-radius: 8px; }
@@ -230,64 +250,72 @@ while($row = mysqli_fetch_assoc($res_about)) { $about_images[$row['section_key']
     </div>
 
     <div class="admin-card" id="gallery-mgmt">
-        <h4 class="fw-bold mb-4 text-primary"><i class="bi bi-camera-reels me-2"></i>Gallery Activity Management</h4>
-        <form action="" method="POST" enctype="multipart/form-data" class="row g-3">
-            <div class="col-md-5">
-                <label class="form-label small fw-bold">Select File (Image or Video)</label>
-                <input type="file" name="activity_file" class="form-control" required>
-            </div>
-            <div class="col-md-4">
-                <label class="form-label small fw-bold">Operation Label</label>
-                <select name="activity_label" class="form-select" required>
-                    <option value="Logistics">Logistics</option>
-                    <option value="Packaging">Packaging</option>
-                    <option value="Staff Meet">Staff Meet</option>
-                    <option value="Warehouse">Warehouse</option>
-                    <option value="Distribution">Distribution</option>
-                    <option value="Customer Service">Customer Service</option>
-                </select>
-            </div>
-            <div class="col-md-3 d-flex align-items-end">
-                <button type="submit" name="add_gallery_activity" class="btn btn-primary w-100 rounded-pill fw-bold shadow-sm">Upload to Gallery</button>
-            </div>
-        </form>
-
-        <div class="table-responsive mt-4">
-            <table class="table align-middle">
-                <thead class="table-light">
-                    <tr>
-                        <th>Preview</th><th>Label</th><th>Type</th><th class="text-end">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php
-                    $acts = mysqli_query($conn, "SELECT * FROM gallery_activities ORDER BY id DESC");
-                    while($a = mysqli_fetch_assoc($acts)):
-                    ?>
-                    <tr>
-                        <td>
-                            <?php if($a['file_type'] == 'video'): ?>
-                                <i class="bi bi-play-circle-fill fs-3 text-primary"></i>
-                            <?php else: ?>
-                                <img src="uploads/<?php echo $a['file_path']; ?>" class="preview-img">
-                            <?php endif; ?>
-                        </td>
-                        <td><span class="fw-bold"><?php echo $a['label']; ?></span></td>
-                        <td><span class="badge bg-light text-dark border"><?php echo strtoupper($a['file_type']); ?></span></td>
-                        <td class="text-end">
-                            <a href="admin.php?delete_activity=<?php echo $a['id']; ?>" class="btn btn-sm btn-outline-danger px-3 rounded-pill" onclick="return confirm('Remove from gallery?')">Delete</a>
-                        </td>
-                    </tr>
-                    <?php endwhile; ?>
-                </tbody>
-            </table>
+    <h4 class="fw-bold mb-4 text-primary"><i class="bi bi-people-fill me-2"></i>Gallery & Staff Management</h4>
+    <form action="" method="POST" enctype="multipart/form-data" class="row g-3">
+        <div class="col-md-5">
+            <label class="form-label small fw-bold">Select File (Team Photo or Activity)</label>
+            <input type="file" name="activity_file" class="form-control" required>
         </div>
+        <div class="col-md-4">
+            <label class="form-label small fw-bold">Category / Label</label>
+            <select name="activity_label" class="form-select" required>
+                <optgroup label="Staff & Teams">
+                    <option value="Logistics Team">Logistics Team</option>
+                    <option value="Sales Department">Sales Department</option>
+                    <option value="Warehouse Staff">Warehouse Staff</option>
+                    <option value="Distribution Team">Distribution Team</option>
+                    <option value="Management">Management</option>
+                </optgroup>
+                <optgroup label="General Operations">
+                    <option value="Packaging">Packaging</option>
+                    <option value="Events">Events</option>
+                </optgroup>
+            </select>
+        </div>
+        <div class="col-md-3 d-flex align-items-end">
+            <button type="submit" name="add_gallery_activity" class="btn btn-primary w-100 rounded-pill fw-bold">Update Gallery</button>
+        </div>
+    </form>
+
+    <div class="table-responsive mt-4">
+        <table class="table align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Preview</th>
+                    <th>Team/Label</th>
+                    <th>Type</th>
+                    <th class="text-end">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php
+                $acts = mysqli_query($conn, "SELECT * FROM gallery_activities ORDER BY id DESC");
+                while($a = mysqli_fetch_assoc($acts)):
+                ?>
+                <tr>
+                    <td>
+                        <?php if($a['file_type'] == 'video'): ?>
+                            <i class="bi bi-play-circle-fill fs-3 text-primary"></i>
+                        <?php else: ?>
+                            <img src="uploads/<?php echo $a['file_path']; ?>" class="preview-img" style="width: 80px; height: 50px; object-fit: cover;">
+                        <?php endif; ?>
+                    </td>
+                    <td><span class="fw-bold text-dark"><?php echo $a['label']; ?></span></td>
+                    <td><span class="badge bg-light text-primary border"><?php echo strtoupper($a['file_type']); ?></span></td>
+                    <td class="text-end">
+                        <a href="admin.php?delete_activity=<?php echo $a['id']; ?>" class="btn btn-sm btn-outline-danger px-3 rounded-pill" onclick="return confirm('Remove this item?')">Delete</a>
+                    </td>
+                </tr>
+                <?php endwhile; ?>
+            </tbody>
+        </table>
     </div>
+</div>
 
     <div class="admin-card" id="inventory">
         <h4 class="fw-bold mb-4 text-primary"><i class="bi bi-plus-circle me-2"></i>Add Brand Product Flavor</h4>
         <form action="" method="POST" enctype="multipart/form-data" class="row g-3">
-            <div class="col-md-4">
+            <div class="col-md-6">
                 <label class="form-label small fw-bold">Category (Brand)</label>
                 <select name="brand_name" class="form-select" required>
                     <option value="Club Soda">Club Soda</option>
@@ -296,33 +324,35 @@ while($row = mysqli_fetch_assoc($res_about)) { $about_images[$row['section_key']
                     <option value="Lato">Lato</option>
                     <option value="Azam">Azam</option>
                     <option value="Coastal Bottlers">Coastal Bottlers</option>
+                    <option value="Bounty Limited">Bounty Limited</option> <option value="Mt Kenya">Mt Kenya</option>
                     <option value="Cordials">Cordials</option>
                     <option value="Pure Water">Pure Water</option>
                     <option value="Bazu">Bazu</option>
                     <option value="Highland Drinks">Highland Drinks</option>
                 </select>
             </div>
-            <div class="col-md-4">
-                <label class="form-label small fw-bold">Flavor Name</label>
+            <div class="col-md-6">
+                <label class="form-label small fw-bold">Flavor/Product Name</label>
                 <input type="text" name="flavor_name" class="form-control" placeholder="e.g. Pineapple" required>
             </div>
+
             <div class="col-md-4">
-                <label class="form-label small fw-bold">Size Label</label>
-                <input type="text" name="size_label" class="form-control" placeholder="e.g. 500ml / 2L" required>
+                <label class="form-label small fw-bold text-info">3D LED Cover Image (Main Display)</label>
+                <input type="file" name="product_cover" class="form-control">
+                <small class="text-muted">High resolution recommended for 3D look</small>
             </div>
-            
-            <div class="col-md-6">
-                <label class="form-label small fw-bold">Primary Image (Solo Bottle shot)</label>
+            <div class="col-md-4">
+                <label class="form-label small fw-bold">Primary Image (Solo shot)</label>
                 <input type="file" name="product_image" class="form-control" required>
             </div>
-            <div class="col-md-6">
-                <label class="form-label small fw-bold">Secondary Image (Group/Box/Lifestyle)</label>
+            <div class="col-md-4">
+                <label class="form-label small fw-bold">Secondary Image (Group/Side view)</label>
                 <input type="file" name="product_image_2" class="form-control" required>
             </div>
 
             <div class="col-md-10">
                 <label class="form-label small fw-bold">Flavor Description</label>
-                <textarea name="description" class="form-control" rows="2" placeholder="Taste notes..." required></textarea>
+                <textarea name="description" class="form-control" rows="2" placeholder="Describe the taste and refreshment details..." required></textarea>
             </div>
             <div class="col-md-2 d-flex align-items-end">
                 <div class="form-check form-switch mb-3">
@@ -332,18 +362,18 @@ while($row = mysqli_fetch_assoc($res_about)) { $about_images[$row['section_key']
             </div>
 
             <div class="col-12 text-end">
-                <button type="submit" name="add_product_variation" class="btn btn-primary px-5 rounded-pill fw-bold shadow">Save Variation</button>
+                <button type="submit" name="add_product_variation" class="btn btn-primary px-5 rounded-pill fw-bold shadow">Save Product</button>
             </div>
         </form>
 
         <hr class="my-5">
 
-        <h4 class="fw-bold mb-4 section-header">Brand Inventory List</h4>
+        <h4 class="fw-bold mb-4 section-header">Product Inventory List</h4>
         <div class="table-responsive">
             <table class="table align-middle">
                 <thead class="table-light">
                     <tr>
-                        <th>Images</th><th>Category</th><th>Flavor</th><th>Size</th><th>Home Status</th><th class="text-end">Action</th>
+                        <th>Image Set (Cover / Solo / Side)</th><th>Category</th><th>Flavor</th><th>Status</th><th class="text-end">Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -353,14 +383,16 @@ while($row = mysqli_fetch_assoc($res_about)) { $about_images[$row['section_key']
                     ?>
                     <tr>
                         <td>
-                            <img src="uploads/products/<?php echo $row['image_path']; ?>" class="product-img" title="Primary">
-                            <?php if(!empty($row['image_path_2'])): ?>
-                                <img src="uploads/products/<?php echo $row['image_path_2']; ?>" class="product-img" title="Secondary">
-                            <?php endif; ?>
+                            <div class="d-flex align-items-center gap-2">
+                                <?php if(!empty($row['image_path_cover'])): ?>
+                                    <img src="uploads/products/<?php echo $row['image_path_cover']; ?>" class="cover-led-preview" title="Cover Image">
+                                <?php endif; ?>
+                                <img src="uploads/products/<?php echo $row['image_path']; ?>" class="product-img" title="Solo Image">
+                                <img src="uploads/products/<?php echo $row['image_path_2']; ?>" class="group-img-small" title="Secondary Image">
+                            </div>
                         </td>
                         <td><span class="badge bg-primary"><?php echo $row['brand_name']; ?></span></td>
                         <td><span class="fw-bold"><?php echo $row['flavor_name']; ?></span></td>
-                        <td><?php echo $row['size_label']; ?></td>
                         <td>
                             <?php if($row['show_on_home']): ?>
                                 <span class="badge bg-success text-white"><i class="bi bi-eye-fill"></i> Visible</span>
@@ -369,7 +401,7 @@ while($row = mysqli_fetch_assoc($res_about)) { $about_images[$row['section_key']
                             <?php endif; ?>
                         </td>
                         <td class="text-end">
-                            <a href="admin.php?delete_variation=<?php echo $row['id']; ?>" class="btn btn-sm btn-outline-danger px-3 rounded-pill" onclick="return confirm('Delete this variation and its images?')">Delete</a>
+                            <a href="admin.php?delete_variation=<?php echo $row['id']; ?>" class="btn btn-sm btn-outline-danger px-3 rounded-pill" onclick="return confirm('Delete this product and all 3 images?')">Delete</a>
                         </td>
                     </tr>
                     <?php endwhile; ?>

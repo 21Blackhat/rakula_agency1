@@ -69,29 +69,43 @@ $category = isset($_GET['cat']) ? mysqli_real_escape_string($conn, $_GET['cat'])
             transform: translateY(-2px);
         }
 
-        /* 2-Image Flavor Card Upgrade */
+        /* PREMIUM 3-IMAGE CARD UPGRADE (Kevian Style) */
         .flavor-card { 
             border: none; 
             transition: 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); 
             background: white; 
-            border-radius: 25px; 
+            border-radius: 30px; 
             overflow: hidden; 
-            margin-bottom: 40px; 
+            margin-bottom: 50px; 
             box-shadow: 0 10px 40px rgba(0,0,0,0.04); 
         }
         
         .flavor-card:hover { 
             transform: translateY(-12px); 
-            box-shadow: 0 20px 50px rgba(0,0,0,0.1); 
+            box-shadow: 0 25px 60px rgba(0,0,0,0.12); 
         }
-        
-        .img-container { 
+
+        /* Top Large Cover Image */
+        .cover-container { 
             background: #fff; 
-            padding: 40px; 
+            height: 420px; 
+            width: 100%; 
             display: flex; 
             align-items: center; 
             justify-content: center; 
-            height: 350px;
+            padding: 30px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .cover-img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        
+        /* Bottom Two Detail Images */
+        .sub-img-container { 
+            background: #fff; 
+            padding: 30px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            height: 300px;
         }
 
         .product-img { 
@@ -102,37 +116,39 @@ $category = isset($_GET['cat']) ? mysqli_real_escape_string($conn, $_GET['cat'])
         }
         
         .card-details { 
-            padding: 35px; 
+            padding: 40px; 
             background: #fff;
-            border-top: 1px solid #f0f0f0;
+            text-align: center;
         }
 
         .brand-label { 
             color: var(--coastal-red); 
             font-weight: 800; 
             text-transform: uppercase; 
-            font-size: 0.75rem; 
+            font-size: 0.8rem; 
             letter-spacing: 2.5px;
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
         }
 
         .flavor-title { 
             color: var(--coastal-dark); 
             font-weight: 700; 
-            font-size: 1.6rem;
+            font-size: 2.2rem;
         }
 
         .badge-size { 
             background: var(--coastal-dark); 
             color: white; 
             font-weight: 700; 
-            padding: 10px 22px; 
-            border-radius: 14px;
-            font-size: 0.9rem;
+            padding: 12px 30px; 
+            border-radius: 50px;
+            font-size: 0.95rem;
+            display: inline-block;
+            margin-top: 20px;
         }
 
-        .desc-text { color: #555; font-size: 1rem; line-height: 1.8; margin-top: 15px; }
+        .desc-text { color: #555; font-size: 1.05rem; line-height: 1.8; max-width: 800px; margin: 20px auto 0; }
     </style>
 </head>
 <body>
@@ -158,7 +174,7 @@ $category = isset($_GET['cat']) ? mysqli_real_escape_string($conn, $_GET['cat'])
 
 <header class="category-header text-center">
     <div class="container">
-        <span class="badge bg-white text-danger px-3 py-2 mb-3 rounded-pill fw-bold">REFRESHING MOMENTS</span>
+        <span class="badge bg-white text-danger px-3 py-2 mb-3 rounded-pill fw-bold shadow-sm">REFRESHING MOMENTS</span>
         <h1 class="fw-bold display-3 mb-2"><?php echo htmlspecialchars($category); ?></h1>
         <p class="lead opacity-90 fw-light">Distributing Happiness via Coastal Bottlers & Rakula Agency</p>
     </div>
@@ -167,43 +183,60 @@ $category = isset($_GET['cat']) ? mysqli_real_escape_string($conn, $_GET['cat'])
 <div class="container my-5">
     <div class="nav-scroller mb-5 text-center">
         <?php 
-        $coastal_cats = ['Coca Cola', 'Predator']; // From notes
+        $coastal_cats = ['Coca Cola', 'Predator']; 
         foreach($coastal_cats as $cat_item):
-            $active = ($category == $cat_item) ? 'active' : '';
+            $active = (strcasecmp($category, $cat_item) == 0) ? 'active' : '';
             echo "<a href='?cat=" . urlencode($cat_item) . "' class='btn btn-cat $active'>$cat_item</a>";
         endforeach;
         ?>
     </div>
 
-    <div class="row">
+    <div class="row justify-content-center">
         <?php
-        $query = "SELECT * FROM product_variations WHERE brand_name = '$category' ORDER BY id DESC";
+        // Updated Query: Search brand name but also flavor/description for maximum results
+        $query = "SELECT * FROM product_variations 
+                  WHERE brand_name = '$category' 
+                  OR flavor_name LIKE '%$category%' 
+                  ORDER BY id DESC";
         $result = mysqli_query($conn, $query);
 
         if(mysqli_num_rows($result) > 0) {
             while($row = mysqli_fetch_assoc($result)) {
                 ?>
-                <div class="col-lg-6">
+                <div class="col-lg-10 mb-5">
                     <div class="flavor-card">
-                        <div class="row g-0">
-                            <div class="col-6 img-container border-end">
-                                <img src="uploads/products/<?php echo $row['image_path']; ?>" class="product-img" alt="Product Pack">
+                        
+                        <div class="cover-container">
+                            <?php if (!empty($row['image_path_cover'])): ?>
+                                <img src="uploads/products/<?php echo $row['image_path_cover']; ?>" class="cover-img" alt="Product Pack">
+                            <?php else: ?>
+                                <div class="text-muted text-center">
+                                    <i class="bi bi-image display-4"></i><br>
+                                    <small>Cover image pending for this variant</small>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+
+                        <div class="row g-0 border-bottom">
+                            <div class="col-6 sub-img-container border-end">
+                                <img src="uploads/products/<?php echo $row['image_path']; ?>" class="product-img" alt="Primary View">
                             </div>
-                            <div class="col-6 img-container">
-                                <img src="uploads/products/<?php echo $row['image_path_2']; ?>" class="product-img" alt="Variety Selection">
+                            <div class="col-6 sub-img-container">
+                                <img src="uploads/products/<?php echo $row['image_path_2']; ?>" class="product-img" alt="Alternate View">
                             </div>
                         </div>
+
                         <div class="card-details">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div>
-                                    <small class="brand-label">COASTAL BOTTLERS RANGE</small>
-                                    <h3 class="flavor-title mb-0"><?php echo htmlspecialchars($row['flavor_name']); ?></h3>
-                                </div>
-                                <span class="badge-size"><?php echo htmlspecialchars($row['size_label']); ?></span>
-                            </div>
+                            <small class="brand-label">COASTAL BOTTLERS RANGE</small>
+                            <h2 class="flavor-title mb-0"><?php echo htmlspecialchars($row['flavor_name']); ?></h2>
+                            
                             <p class="desc-text">
                                 <?php echo nl2br(htmlspecialchars($row['description'])); ?>
                             </p>
+
+                            <div class="mt-4">
+                                <span class="badge-size"><?php echo htmlspecialchars($row['size_label']); ?></span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -215,6 +248,7 @@ $category = isset($_GET['cat']) ? mysqli_real_escape_string($conn, $_GET['cat'])
                 <div class="bg-white p-5 rounded-5 shadow-sm d-inline-block">
                     <i class="bi bi-cup-straw display-1 text-danger opacity-25"></i>
                     <h3 class="mt-4 text-muted">Refreshing variants for <?php echo htmlspecialchars($category); ?> are arriving soon.</h3>
+                    <p class="text-muted">Please check your database for category matching.</p>
                 </div>
             </div>
             <?php
@@ -229,7 +263,7 @@ $category = isset($_GET['cat']) ? mysqli_real_escape_string($conn, $_GET['cat'])
             <div class="col-md-12">
                 <h5 class="fw-bold mb-3">Rakula Ltd</h5>
                 <p class="text-muted small mb-1">Established 31st July, 2022</p>
-                <p class="text-muted small mb-3">Situatied off Mombasa – Malindi road – Makutini stage</p>
+                <p class="text-muted small mb-3">Situated off Mombasa – Malindi road – Makutini stage</p>
                 <div class="d-flex justify-content-center gap-4">
                     <span class="text-muted"><i class="bi bi-telephone-fill me-2"></i>0720864493</span>
                     <span class="text-muted"><i class="bi bi-envelope-fill me-2"></i>RakulaAgency@gmail.com</span>
