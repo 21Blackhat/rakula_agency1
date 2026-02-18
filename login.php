@@ -61,7 +61,7 @@ if (isset($_POST['login'])) {
                 <form method="POST">
                     <div class="mb-3">
                         <label class="form-label small fw-bold">Email Address</label>
-                        <input type="email" name="email" class="form-control rounded-3" placeholder="admin@rakula.com" required>
+                        <input type="email" name="email" class="form-control rounded-3" placeholder="email" required>
                     </div>
 
                     <div class="mb-2">
