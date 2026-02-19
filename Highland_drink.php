@@ -120,7 +120,7 @@ $category = isset($_GET['cat']) ? mysqli_real_escape_string($conn, $_GET['cat'])
                 <?php
             }
         } else {
-            echo '<div class="col-12 text-center py-5"><h3 class="text-muted">No products found for this category.</h3></div>';
+            echo '<div class="col-12 text-center py-5"><h3 class="text-muted">We’re restocking—stay tuned..</h3></div>';
         }
         ?>
     </div>
