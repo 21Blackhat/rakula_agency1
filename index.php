@@ -268,7 +268,7 @@ $short_about = (strlen($about_text) > 250) ? substr($about_text, 0, 250) . "..."
         <div class="row justify-content-center">
             <div class="col-md-9">
                 <p class="text-muted fs-5 leading-relaxed">
-                    Rakula Ltd was established on <strong>31st July, 2022</strong>. 
+                    Rakula Ltd was established on <strong>16th August, 2016</strong>. 
                     Situated off Mombasa – Malindi road – Makutini stage, Mombasa County, 
                     we specialize in general trade across both retail and wholesale sectors within the region.
                 </p>
