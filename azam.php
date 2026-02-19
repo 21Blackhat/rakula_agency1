@@ -231,7 +231,7 @@ $category = isset($_GET['cat']) ? mysqli_real_escape_string($conn, $_GET['cat'])
                 <div class="bg-white p-5 rounded-5 shadow-sm d-inline-block">
                     <i class="bi bi-lightning-fill display-1 text-warning opacity-25"></i>
                     <h3 class="mt-4 text-muted">Variants for <?php echo htmlspecialchars($category); ?> are being updated.</h3>
-                    <p class="text-muted">Please check your Admin Hub to ensure images are uploaded.</p>
+                    <p class="text-muted">We’re restocking—stay tuned..</p>
                 </div>
             </div>
             <?php
