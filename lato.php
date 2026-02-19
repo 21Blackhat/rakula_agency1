@@ -218,7 +218,7 @@ $category = isset($_GET['cat']) ? mysqli_real_escape_string($conn, $_GET['cat'])
                 <div class="bg-white p-5 rounded-4 shadow-sm d-inline-block">
                     <i class="bi bi-info-circle display-1 text-primary opacity-25"></i>
                     <h3 class="mt-3 text-muted">No "<?php echo htmlspecialchars($category); ?>" products found.</h3>
-                    <p>Check the "Product Inventory List" in your Management Hub to ensure the Flavor Name contains "<?php echo htmlspecialchars($category); ?>".</p>
+                    <p>flavors coming soon "<?php echo htmlspecialchars($category); ?>".</p>
                     <a href="lato.php" class="btn btn-primary rounded-pill mt-3">View All Lato</a>
                 </div>
             </div>
