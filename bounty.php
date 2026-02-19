@@ -79,6 +79,23 @@ if ($bounty_res && mysqli_num_rows($bounty_res) > 0) {
     </style>
 </head>
 <body>
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top" style="background:#111">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="index.php">RAKULA AGENCY</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
+                <li class="nav-item"><a class="nav-link active" href="lato.php">Lato Milk</a></li>
+                <li class="nav-item"><a class="nav-link" href="bounty.php">Bounty Brands</a></li>
+                <li class="nav-item"><a class="nav-link" href="highland_drinks.php">Highland Brands</a></li>
+                <li class="nav-item"><a class="nav-link" href="contact.php">Contact</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
 
 <?php if(file_exists('theme_handler.php')) { include 'theme_handler.php'; } ?>
 
