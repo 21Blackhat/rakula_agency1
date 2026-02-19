@@ -75,7 +75,7 @@ if ($about_res) {
 <header class="text-white text-center">
     <div class="container">
         <h1 class="display-4 fw-bold">Company Introduction</h1>
-        <p class="lead">Established on 31st July, 2022</p>
+        <p class="lead">Established on 16th August, 2016</p>
     </div>
 </header>
 
@@ -87,10 +87,10 @@ if ($about_res) {
         <div class="col-md-6">
             <h2 class="fw-bold text-primary mb-3">Who We Are</h2>
             <p class="text-muted fs-5">
-                Rakula Ltd was established on <strong>31st July, 2022</strong>. Situated off Mombasa – Malindi road – Makutini stage, Mombasa County, we specialize in general trade across both retail and wholesale sectors within the region.
+                Rakula Ltd was established on <strong>16th August, 2016</strong>. Situated off Mombasa – Malindi road – Makutini stage, Mombasa County, we specialize in general trade across both retail and wholesale sectors within the region.
             </p>
             <p class="text-muted">
-                With our dedicated fleet of <strong>six vehicles</strong>, we ensure our distribution and delivery processes are consistently easy, prompt, and reliable.
+                With our dedicated fleet of <strong>vehicles</strong>, we ensure our distribution and delivery processes are consistently easy, prompt, and reliable.
             </p>
             <div class="stat-card mt-4">
                 <h4 class="mb-0 fw-bold text-primary">Regional Focus</h4>
@@ -155,7 +155,7 @@ if ($about_res) {
                     <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Mount Kenya Diary Milk</li>
                 </ul>
                 <img src="uploads/<?php echo $images['fleet']; ?>" class="img-fluid rounded mt-3 shadow-sm" alt="Our Fleet">
-                <p class="text-center mt-2 small text-muted">Logistics Fleet: 6 Vehicles</p>
+                <p class="text-center mt-2 small text-muted">Logistics Fleet: Vehicles</p>
             </div>
         </div>
         
