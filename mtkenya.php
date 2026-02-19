@@ -209,7 +209,7 @@ $category = isset($_GET['cat']) ? mysqli_real_escape_string($conn, $_GET['cat'])
                 <div class="bg-white p-5 rounded-5 shadow-sm d-inline-block">
                     <i class="bi bi-droplet display-1 text-info opacity-25"></i>
                     <h3 class="mt-4 text-muted">Variations for <?php echo htmlspecialchars($category); ?> are being updated.</h3>
-                    <p class="text-muted">Ensure your product in the database has "Mt Kenya" as the Brand Name.</p>
+                    <p class="text-muted">coming soon.</p>
                 </div>
             </div>
             <?php
