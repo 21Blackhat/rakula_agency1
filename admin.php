@@ -262,7 +262,7 @@ while($row = mysqli_fetch_assoc($res_about)) { $about_images[$row['section_key']
                 <optgroup label="Staff & Teams">
                     <option value="Logistics Team">Logistics Team</option>
                     <option value="Sales Department">Sales Department</option>
-                    <option value="Warehouse Staff">Warehouse Staff</option>
+                    <option value="Warehouse Staff">Warehouse </option>
                     <option value="Distribution Team">Distribution Team</option>
                     <option value="Management">Management</option>
                 </optgroup>
